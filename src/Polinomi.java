@@ -18,6 +18,9 @@ public final class Polinomi {
     public int dimenzija;
     public int dva_n;
     
+    public native double mnoziStandJNI(int[] A1, int[] A2,int[] B1, int[] B2, int[] C1, int[] C2, int n);  
+    static { System.loadLibrary("standardnoJNI"); }  
+    
     public Polinomi(int stupanj){
         id++;
         dimenzija = stupanj;
