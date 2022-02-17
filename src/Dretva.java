@@ -18,6 +18,7 @@ public class Dretva implements Runnable{
         p = pol;
         metoda = m;
     } 
+    static { System.loadLibrary("standardnoJNI"); } 
     @Override
     public void run(){
         try{
@@ -42,6 +43,39 @@ public class Dretva implements Runnable{
                 rjesenje = p.mnoziIterativniFFT();
                 long end = System.currentTimeMillis();
                 vrijeme = end - start;
+            }
+            else if(metoda == 4){
+                int[] a_real;
+                int[] a_imag;
+                int[] b_real;
+                int[] b_imag;
+                int[] c_real;
+                int[] c_imag;
+                a_real = new int[p.dimenzija];
+                a_imag = new int[p.dimenzija];
+                b_real = new int[p.dimenzija];
+                b_imag = new int[p.dimenzija];
+                c_real = new int[p.dimenzija*2];
+                c_imag = new int[p.dimenzija*2];
+                for(int i = 0; i < p.dimenzija; i++)
+                {
+                    a_real[i] = (int)p.prvi_polinom[i].real;
+                    a_imag[i] = (int)p.prvi_polinom[i].imag;
+
+                    b_real[i] = (int)p.drugi_polinom[i].real;
+                    b_imag[i] = (int)p.drugi_polinom[i].imag;
+                }
+                for(int j = 0; j < p.dimenzija *2; j++ )
+                {
+                    c_real[j] = 0;
+                    c_imag[j] = 0;
+                }
+                // Standardna JNI metoda množenja 
+                long start = System.currentTimeMillis();
+                p.mnoziStandJNI(a_real, a_imag, b_real, b_imag, c_real, c_imag, p.dimenzija);
+                long end = System.currentTimeMillis();
+                vrijeme = end - start;
+                System.out.println("JNI vrijeme:"+vrijeme);
             }
             
         }
