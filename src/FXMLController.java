@@ -49,6 +49,9 @@ public class FXMLController implements Initializable {
     @FXML 
     private Label iterL;
     
+    @FXML 
+    private Label standJNIL;
+    
     @FXML
     private BarChart grafic;
     @FXML 
@@ -66,7 +69,7 @@ public class FXMLController implements Initializable {
     
     Complex[] c;
     String umnozak,a,b;
-    long m1, m2, m3;
+    long m1, m2, m3, m4;
     BazaPodataka baza;
     UBazi element;
     TextOutput textOutput, textOutput1;
@@ -106,40 +109,54 @@ public class FXMLController implements Initializable {
         Dretva treca_dretva = new Dretva(p, 3);
         Thread a3 = new Thread(treca_dretva);
         
+        Dretva cetvrta_dretva = new Dretva(p, 4);
+        Thread a4 = new Thread(cetvrta_dretva);
+        
         a2.start();
         a3.start();
         a1.start();
+        a4.start();
         a1.join();
         a2.join();
         a3.join();
+        a4.join();
         
         c = prva_dretva.vratiRjesenje();
         long vrijeme = prva_dretva.vratiVrijeme();
-       System.out.println("Vrijeme prvog: " + vrijeme);
-       m1 = vrijeme;
-       standL.setText(m1 + " ms");
-       long vrijeme2 = druga_dretva.vratiVrijeme();
-       System.out.println("Vrijeme drugog: " + vrijeme2);
-       m2 = vrijeme2;
-       rekL.setText(m2 + " ms");
-       long vrijeme3 = treca_dretva.vratiVrijeme();
-       System.out.println("Vrijeme drugog: " + vrijeme3);
-       m3 = vrijeme3;
-       iterL.setText(m3 + " ms");
-       stvoriGraf();
-       element = new UBazi(Polinomi.id, p.dimenzija, (int)m1, (int)m2, (int)m3);
-       System.out.println(element);
-       baza.dodaj(element);
+        System.out.println("Vrijeme prvog: " + vrijeme);        
+        m1 = vrijeme;
+        standL.setText(m1 + " ms");
+        long vrijeme2 = druga_dretva.vratiVrijeme();
+        System.out.println("Vrijeme drugog: " + vrijeme2);
+        m2 = vrijeme2;
+        rekL.setText(m2 + " ms");
+        long vrijeme3 = treca_dretva.vratiVrijeme();
+        System.out.println("Vrijeme drugog: " + vrijeme3);
+        m3 = vrijeme3;
+        iterL.setText(m3 + " ms");
+        
+        long vrijeme4 = cetvrta_dretva.vratiVrijeme();
+        System.out.println("Vrijeme cetvrtog: " + vrijeme4);
+        m4 = vrijeme4;
+        standJNIL.setText(m4 + " ms");
+        
+        stvoriGraf();
+        element = new UBazi(Polinomi.id, p.dimenzija, (int)m1, (int)m2, (int)m3, (int)m4);
+        System.out.println(element);
+        baza.dodaj(element);
     }
     void stvoriGraf(){
+        //grafic.getData().clear();
         final  String stand = "Standardno množenje";
         final  String rek = "Rekurzivni FFT";
-        final String iter = "Iterativni FFT";        
+        final String iter = "Iterativni FFT";     
+        final String standJNI = "Standardni (JNI)";     
         XYChart.Series<String, Number> serije = new XYChart.Series<>();
         serije.setName(String.valueOf(dimenzija));
         serije.getData().add(new XYChart.Data<>(stand, m1));
         serije.getData().add(new XYChart.Data<>(rek, m2));
         serije.getData().add(new XYChart.Data<>(iter, m3));
+        serije.getData().add(new XYChart.Data<>(standJNI, m4));
         
         grafic.getData().addAll(serije);
     }
@@ -184,9 +201,11 @@ public class FXMLController implements Initializable {
         System.out.println(umnozak);
 
         
-        
-        textAnimator = new TextAnimator("A(x) = "+a,5,textOutput,ispisZaC);
-        textAnimator1 = new TextAnimator("B(x) = "+b,5,textOutput1,ispisZaC);
+        int animTime = 50;
+        if(dimenzija > 20)
+            animTime = 0;
+        textAnimator = new TextAnimator("A(x) = "+a,animTime,textOutput,ispisZaC);
+        textAnimator1 = new TextAnimator("B(x) = "+b,animTime,textOutput1,ispisZaC);
         
         thread = new Thread(textAnimator);  
         thread.start();
@@ -206,8 +225,10 @@ public class FXMLController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        stvoriGraf();
+        
         baza = new BazaPodataka();
-        baza.stvoriBazu("baza2");
+        baza.stvoriBazu("baza4");
         baza.stvoriStol();
         ispisZaC.setVisible(false);
 
