@@ -13,18 +13,20 @@ public class UBazi {
     public int standardni;
     public int rekFFT;
     public int iterFFT;
+    public int standJNI;
     
-    public UBazi(int a, int b, int c, int d, int e){
+    public UBazi(int a, int b, int c, int d, int e, int f){
         ID = a;
         dimenzija = b;
         standardni = c;
         rekFFT = d;
         iterFFT = e;
+        standJNI = f;
     }
     
     @Override
     public String toString(){
         return "ID: " + ID + ", dimenzija: " + dimenzija + ", stand: " + standardni +
-                ", rek: " + rekFFT + ", iter: " + iterFFT;
+                ", rek: " + rekFFT + ", iter: " + iterFFT + ", standJNI: " + standJNI;
     }
 }
