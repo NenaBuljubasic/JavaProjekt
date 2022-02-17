@@ -4,17 +4,23 @@
  * and open the template in the editor.
  */
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-
-
+import javafx.stage.Stage;
 /**
  * FXML Controller class
  *
@@ -32,21 +38,21 @@ public class FXMLController implements Initializable {
     Thread thread1;
 
 
+   
+    public Polinomi pol;
     @FXML
-    private Button kreni;
+    private Label standL;
     
     @FXML
-    private Button dodajDimenziju;
+    private Label rekL;
     
     @FXML 
-    private Button spremiUBazu;
+    private Label iterL;
     
     @FXML
-    private Button pretraziBazu;
-    
+    private BarChart grafic;
     @FXML 
     private TextField dimenzijaT;
-    
     
     @FXML 
     private TextArea ispisZaA;
@@ -56,71 +62,100 @@ public class FXMLController implements Initializable {
     
     @FXML 
     private TextArea ispisZaC;
-
     
     
-   
-    
-    Complex[] ap,c;
-    Complex[] bp;
+    Complex[] c;
     String umnozak,a,b;
+    long m1, m2, m3;
+    BazaPodataka baza;
+    UBazi element;
     TextOutput textOutput, textOutput1;
     int dimenzija;
-    int dimenzijaKonacna;
-    int dimenzijaProsirena;
+   
     @FXML
     void postaviDimenziju(ActionEvent event) throws InterruptedException {
-        ap = null;
-        bp = null;
         c = null;
         a = "";
         b = "";
         umnozak  = "";
         
+        standL.setText("");
+        rekL.setText("");
+        iterL.setText("");
         ispisZaC.setVisible(false);
         ispisZaA.setText("");
         ispisZaB.setText("");
         
         dimenzija = Integer.parseInt(dimenzijaT.getCharacters().toString())+1;
         System.out.println(dimenzija);
-        dimenzijaProsirena = dimenzija;
-        if((int)(Math.ceil((Math.log(dimenzija) / Math.log(2)))) != (int)(Math.floor(((Math.log(dimenzija) / Math.log(2))))))
-        {
-            while((int)(Math.ceil((Math.log(dimenzijaProsirena) / Math.log(2)))) != (int)(Math.floor(((Math.log(dimenzijaProsirena) / Math.log(2))))))
-            {
-                dimenzijaProsirena++;
-            }
-        }
-
-        System.out.println(dimenzija+" "+dimenzijaProsirena);
         
-        ap = new Polinomi().napuni(dimenzija, dimenzijaProsirena, dimenzijaKonacna);
-        bp = new Polinomi().napuni(dimenzija, dimenzijaProsirena, dimenzijaKonacna);
-
-
-        
-        a = new Polinomi().ispisPolinoma(ap, dimenzija, dimenzijaKonacna);
-        b = new Polinomi().ispisPolinoma(bp, dimenzija, dimenzijaKonacna);
+        Polinomi p = new Polinomi(dimenzija);
+        pol = p;
+        a = p.ispisPolinoma(p.prvi_polinom);
+        b = p.ispisPolinoma(p.drugi_polinom);
         
         
         /*---------------racunanje ffta i mjerenje vremena--------------*/
-        long start = System.currentTimeMillis();
-        ap = racunajFFT.fft(ap);
-        bp = racunajFFT.fft(bp);
-        c = racunajFFT.mult(ap,bp);
-        c = racunajFFT.invfft(c);
         
-        long end = System.currentTimeMillis();
-        System.out.println("vrijeme"+(end-start));
+        Dretva prva_dretva = new Dretva(p, 1);
+        Thread a1 = new Thread(prva_dretva);
         
+        Dretva druga_dretva = new Dretva(p, 2);
+        Thread a2 = new Thread(druga_dretva);
         
+        Dretva treca_dretva = new Dretva(p, 3);
+        Thread a3 = new Thread(treca_dretva);
+        
+        a2.start();
+        a3.start();
+        a1.start();
+        a1.join();
+        a2.join();
+        a3.join();
+        
+        c = prva_dretva.vratiRjesenje();
+        long vrijeme = prva_dretva.vratiVrijeme();
+       System.out.println("Vrijeme prvog: " + vrijeme);
+       m1 = vrijeme;
+       standL.setText(m1 + " ms");
+       long vrijeme2 = druga_dretva.vratiVrijeme();
+       System.out.println("Vrijeme drugog: " + vrijeme2);
+       m2 = vrijeme2;
+       rekL.setText(m2 + " ms");
+       long vrijeme3 = treca_dretva.vratiVrijeme();
+       System.out.println("Vrijeme drugog: " + vrijeme3);
+       m3 = vrijeme3;
+       iterL.setText(m3 + " ms");
+       stvoriGraf();
+       element = new UBazi(Polinomi.id, p.dimenzija, (int)m1, (int)m2, (int)m3);
+       System.out.println(element);
+       baza.dodaj(element);
     }
-    
+    void stvoriGraf(){
+        final  String stand = "Standardno množenje";
+        final  String rek = "Rekurzivni FFT";
+        final String iter = "Iterativni FFT";        
+        XYChart.Series<String, Number> serije = new XYChart.Series<>();
+        serije.setName(String.valueOf(dimenzija));
+        serije.getData().add(new XYChart.Data<>(stand, m1));
+        serije.getData().add(new XYChart.Data<>(rek, m2));
+        serije.getData().add(new XYChart.Data<>(iter, m3));
+        
+        grafic.getData().addAll(serije);
+    }
+    @FXML
+    void stvoriGrafIzBaze(ActionEvent event) throws InterruptedException, IOException{
+         Stage secondStage = new Stage();
+        Parent root = FXMLLoader.load(getClass().getResource("FXML2.fxml"));
+        Scene scene = new Scene(root,657,477);
+        secondStage.setScene(scene);
+        secondStage.show();
+    }
     @FXML
     void pokreniRacunanje(ActionEvent event) throws InterruptedException {
 
         String s = "";
-        for (int i=0;i<dimenzijaProsirena*2;i++)
+        for (int i=0;i<c.length;i++)
         {
             if(c[i].real == 0 && c[i].imag == 0)
                 continue;
@@ -150,8 +185,8 @@ public class FXMLController implements Initializable {
 
         
         
-        textAnimator = new TextAnimator("A(x) = "+a,10,textOutput,ispisZaC);
-        textAnimator1 = new TextAnimator("B(x) = "+b,10,textOutput1,ispisZaC);
+        textAnimator = new TextAnimator("A(x) = "+a,5,textOutput,ispisZaC);
+        textAnimator1 = new TextAnimator("B(x) = "+b,5,textOutput1,ispisZaC);
         
         thread = new Thread(textAnimator);  
         thread.start();
@@ -171,6 +206,9 @@ public class FXMLController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        baza = new BazaPodataka();
+        baza.stvoriBazu("baza2");
+        baza.stvoriStol();
         ispisZaC.setVisible(false);
 
         
@@ -204,11 +242,6 @@ public class FXMLController implements Initializable {
             
         };
         
-
-        
-        
     }  
-    
-    
 }
 

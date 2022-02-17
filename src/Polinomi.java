@@ -1,6 +1,5 @@
 
 import java.util.Random;
-import java.util.Vector;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -12,20 +11,18 @@ import java.util.Vector;
  *
  * @author nenab
  */
-public class Polinomi {
-    public Vector<Complex> vektor_prvi;
-    public Vector<Complex> vektor_drugi;
-    public int stupanj_prvi;
-    public int stupanj_drugi;
+public final class Polinomi {
+    public static int id = new Random().nextInt(1000);
+    public Complex[] prvi_polinom;
+    public Complex[] drugi_polinom;
+    public int dimenzija;
+    public int dva_n;
     
-    
-    public Polinomi(int prvi, int drugi){
-        stupanj_prvi = prvi;
-        stupanj_drugi = drugi;
-        vektor_prvi = new Vector<>();
-        vektor_drugi = new Vector<>();
-        napuniVektor(stupanj_prvi, vektor_prvi);
-        napuniVektor(stupanj_drugi, vektor_drugi);
+    public Polinomi(int stupanj){
+        id++;
+        dimenzija = stupanj;
+        prvi_polinom = napuni();
+        drugi_polinom = napuni();
     }
     
     static boolean potencijaOdDva(int n)
@@ -37,108 +34,34 @@ public class Polinomi {
     Polinomi() {
         
     }
-    public void napuniVektor(int s, Vector<Complex> v){
-        Random r = new Random();
-        double re;
-        double im;
-        Complex broj;
-            for(int i = 0; i < s; i++){
-            
-                re = r.nextDouble();
-                im = r.nextDouble();
-                broj = new Complex(re, im);
-                v.add(broj);
-            }
-            while(!potencijaOdDva(s)){
-                re = 0;
-                im = 0;
-                broj = new Complex(re, im);
-                v.add(broj);
-                s++;
-            }
-    }
-    
-    // Standardno množenje polinoma
-    public Vector<Complex> pomnozi(){
-        Vector<Complex> rezultat = new Vector<>();
-        for(int i = 0; i < vektor_prvi.size() + vektor_drugi.size() - 1; i++){
-            rezultat.add(new Complex(0,0));
-        }
-        for(int i = 0; i < vektor_prvi.size(); i++){
-            for(int j = 0; j < vektor_drugi.size(); j++){
-               Complex temp = rezultat.elementAt(i+j);
-               Complex e = (vektor_prvi.get(i)).times(vektor_drugi.get(j));
-               rezultat.setElementAt(temp.plus(e), i+j);
-            }
-        }
-        return rezultat;
-    }
-    public Complex[] napuni(int dimenzija, int dimenzijaProsirena, int dimenzijaKonacna)
+    public Complex[] napuni()
     {
         Complex[] niz;
-        Random ra = new Random();
-        String s1 = "";
-        if(dimenzijaProsirena > dimenzija)
-        {
-            dimenzijaKonacna = dimenzijaProsirena;
-            niz = new Complex[dimenzijaProsirena*2];
-            for(int i = 0; i < dimenzija; i++)
+        int s = dimenzija;
+        if(potencijaOdDva(dimenzija))
+            niz = new Complex[s * 2];
+        else{
+            while(!potencijaOdDva(s))
             {
-                niz[i] = new Complex((double)ra.nextInt(100), (double)ra.nextInt(100));
-                
-                System.out.println(niz[i]);
-                if(i == 0)
-                {
-                    s1 += niz[i].toString() + " + ";
-                }
-                else
-                {
-                   String kon1 = niz[i].toString() + "x^" + i +" + ";
-                   s1 += kon1;
-                }
+                s++;
             }
-            Complex nula = new Complex(0.0,0.0);
-            for(int i = dimenzija ; i < dimenzijaProsirena*2; i++)
-            {
-                niz[i] = nula;
-                s1 += "";
-
-            }
+            niz = new Complex[s * 2];
         }
-        else
-        {
-            dimenzijaKonacna = dimenzija;
-            niz = new Complex[dimenzija*2];
-            for(int i = 0; i < dimenzija; i++)
-            {
-                niz[i] = new Complex((double)ra.nextInt(100), (double)ra.nextInt(100));
-                
-                System.out.println(niz[i]);
-                if(i == 0)
-                {
-                    s1 += niz[i].toString() + " + ";
-                }
-                else
-                {
-                   String kon1 = niz[i].toString() + "x^" + i +" + ";
-                   s1 += kon1;
-                }
-            }
-            Complex nula = new Complex(0.0,0.0);
-            for(int i = dimenzija ; i < dimenzija*2; i++)
-            {
-                niz[i] = nula;
-            }
-
-            
-
-    }
+        
+        Random ra = new Random();
+        Complex nula = new Complex(0.0,0.0);
+        for(int i = 0; i < dimenzija; i++){
+            niz[i] = new Complex((double)ra.nextInt(100), (double)ra.nextInt(100));
+        }
+        for(int i = dimenzija; i < s * 2; i++){
+            niz[i] = nula;
+        }
+        dva_n = s * 2; // Zapamnti do proširenja
         return niz;
     }
-    public String ispisPolinoma(Complex[] niz, int dimenzija, int dimenzijaKonacna)
+    public String ispisPolinoma(Complex[] niz)
     {
         String s1 = "";
-        Random ra = new Random();
         for(int i = 0; i < dimenzija; i++)
         {
             if(i == 0)
@@ -153,17 +76,48 @@ public class Polinomi {
 
             }
         }
-        
-        for(int i = dimenzija ; i < dimenzijaKonacna*2; i++)
-        {           
-            String kon1 = niz[i].toString() + "x^" + i +" + ";
-            s1 += "";
-        }
         String s = "";
         for( int i = 0; i < s1.length()-2; i++)
                 s += s1.charAt(i);
         return s;
     }
     
-   
+    public Complex[] mnoziIterativniFFT(){
+        Complex[] rezultat = new Complex[dva_n];
+        Complex[] a = prvi_polinom.clone();
+        Complex[] b = drugi_polinom.clone();
+        a = IterativnaVerzija.iterativniFFT(a, dva_n);
+        b = IterativnaVerzija.iterativniFFT(b, dva_n);
+        rezultat = IterativnaVerzija.mnozi(a, b);
+        rezultat = IterativnaVerzija.inverz(rezultat);
+        return rezultat;
+    }
+    public Complex[] mnoziStandardno(){
+        Complex[] rezultat = new Complex[dimenzija * 2];
+        Complex nula = new Complex(0.0, 0.0);
+        for(int i = 0; i < dimenzija * 2; i++)
+            rezultat[i] = nula;
+
+        Complex[] a = prvi_polinom.clone();
+        Complex[] b = drugi_polinom.clone();
+        
+        for(int i = 0; i < dimenzija; i++){
+            for(int j = 0; j < dimenzija; j++){
+                Complex t = a[i].times(b[j]);
+                rezultat[i + j] = rezultat[i + j].plus(t);
+            }
+        }
+        return rezultat;
+    }
+    public Complex[] mnoziFFT(){
+        Complex[] rezultat = new Complex[dva_n];
+        Complex[] a = prvi_polinom.clone();
+        Complex[] b = drugi_polinom.clone();
+        a = racunajFFT.fft(a);
+        b = racunajFFT.fft(b);
+        rezultat = racunajFFT.mult(a,b);
+        rezultat = racunajFFT.invfft(rezultat);
+        
+        return rezultat;
+    }
 }

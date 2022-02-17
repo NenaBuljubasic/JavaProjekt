@@ -15,14 +15,18 @@ import javafx.stage.Stage;
  *
  * @author nenab
  */
-public class NewFXMain extends Application {
+public class NewFXMain extends Application{
     
     @Override
-    public void start(Stage primaryStage) throws IOException {
+    public void start(Stage primaryStage) throws IOException,ClassNotFoundException {
         Parent root = FXMLLoader.load(getClass().getResource("FXML.fxml"));
-        Scene scene = new Scene(root,500,500);
+        Scene scene = new Scene(root,950,491);
         primaryStage.setScene(scene);
         primaryStage.show();
+        
+        //BazaPodataka baza = new BazaPodataka();
+        //baza.stvoriBazu("baza");
+        //baza.stvoriStol();
     }
 
     /**
