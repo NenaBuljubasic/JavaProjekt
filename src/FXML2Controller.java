@@ -33,7 +33,7 @@ public class FXML2Controller implements Initializable {
     @FXML
     public void crtajPoGrafu(ActionEvent event)throws InterruptedException{
         BazaPodataka baza = new BazaPodataka();
-        baza.stvoriBazu("baza2");
+        baza.stvoriBazu("baza4");
         baza.stvoriStol();
         List<UBazi> lista = baza.dohvatiIzBaze();
         lista.sort(new Komparator());
@@ -44,15 +44,19 @@ public class FXML2Controller implements Initializable {
         rekurzivni.setName("Rekurzivni FFT");
         Series iterativni = new XYChart.Series<Number, Number>();
         iterativni.setName("Iterativni FFT");
+        Series standardniJNI = new XYChart.Series<Number, Number>();
+        standardniJNI.setName("Standardni (JNI)");
         
         for(UBazi el:lista){
             standardni.getData().add(new XYChart.Data(String.valueOf(el.dimenzija), el.standardni));
             rekurzivni.getData().add(new XYChart.Data(String.valueOf(el.dimenzija), el.rekFFT));
             iterativni.getData().add(new XYChart.Data(String.valueOf(el.dimenzija), el.iterFFT));
+            standardniJNI.getData().add(new XYChart.Data(String.valueOf(el.dimenzija), el.standJNI));
         }
         graf.getData().add(standardni);
         graf.getData().add(rekurzivni);
         graf.getData().add(iterativni);
+        graf.getData().add(standardniJNI);
     }
     @Override
     public void initialize(URL url, ResourceBundle rb) {
