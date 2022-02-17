@@ -13,7 +13,7 @@ import java.util.List;
 public class BazaPodataka {
     public String urlic;
     
-    private static final String INSERT_SQL = "INSERT INTO mjerenja(id, dimenzija, standardni, rekFFT, iterFFT) VALUES(?, ?, ?, ?, ?)";
+    private static final String INSERT_SQL = "INSERT INTO mjerenja(id, dimenzija, standardni, rekFFT, iterFFT, standJNI) VALUES(?, ?, ?, ?, ?, ?)";
 
     public BazaPodataka(){
        try{
@@ -48,7 +48,7 @@ public class BazaPodataka {
     
     public void stvoriStol(){
         try{
-            String stvori = "CREATE TABLE IF NOT EXISTS mjerenja (\n" + " id integer PRIMARY KEY,\n" + "dimenzija integer,\n" + "standardni integer,\n" + "rekFFT integer,\n" + "iterFFT integer);";
+            String stvori = "CREATE TABLE IF NOT EXISTS mjerenja (\n" + " id integer PRIMARY KEY,\n" + "dimenzija integer,\n" + "standardni integer,\n" + "rekFFT integer,\n" + "iterFFT integer,\n"+"standJNI integer);";
             Statement st = veza().createStatement();
             st.execute(stvori);
         }
@@ -68,7 +68,7 @@ public class BazaPodataka {
             while(r.next()){
                 UBazi novi = new UBazi(r.getInt("id"),
                         r.getInt("dimenzija"), r.getInt("standardni"),
-                        r.getInt("rekFFT"), r.getInt("iterFFT"));
+                        r.getInt("rekFFT"), r.getInt("iterFFT"), r.getInt("standJNI"));
                 rezultat.add(novi);
                 
             }
@@ -102,8 +102,9 @@ public class BazaPodataka {
             ps.setInt(3, element.standardni);
             ps.setInt(4, element.rekFFT);
             ps.setInt(5, element.iterFFT);  // You'll have to update this each and every year. BirthDate would be better.
+            ps.setInt(6, element.standJNI);
             numRowsInserted = ps.executeUpdate();
-            System.out.println("uspješno dodano");
+           
 
         } catch (SQLException e) {
             System.out.println("Nije uspješno...");
